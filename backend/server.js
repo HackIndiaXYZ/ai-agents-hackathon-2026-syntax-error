@@ -16,7 +16,8 @@ app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:5173',
     'http://localhost:5174',
-    'https://career-intelligence.vercel.app'
+    'https://career-intelligence.vercel.app',
+    'https://testf-one.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -31,7 +32,9 @@ app.use(cookieParser());
 app.use(compression());
 app.use(mongoSanitize());
 
+app.get('/', (req, res) => res.json({ success: true, message: 'AI Employment Assistance Platform API is running' }));
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'AI Employment Assistance Platform API', timestamp: new Date() }));
+app.get('/api/test', (req, res) => res.json({ success: true, message: 'API test route works' }));
 
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
@@ -49,10 +52,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 AI Employment Assistance Platform API running on port ${PORT}`);
-  console.log(`📡 Environment: ${process.env.NODE_ENV}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 AI Employment Assistance Platform API running on port ${PORT}`);
+    console.log(`📡 Environment: ${process.env.NODE_ENV}`);
+  });
+}
 
 module.exports = app;

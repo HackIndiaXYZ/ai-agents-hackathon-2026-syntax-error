@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
+  if (!process.env.MONGODB_URI) {
+    console.error('❌ MONGODB_URI is not defined in environment variables. Database connection deferred.');
+    return;
+  }
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     
     // Create demo user on startup
@@ -34,7 +35,6 @@ const connectDB = async () => {
 
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    process.exit(1);
   }
 };
 
