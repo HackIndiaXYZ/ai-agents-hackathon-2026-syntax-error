@@ -1,20 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Zap, ExternalLink, Building2, GraduationCap, Laptop, Calendar, RefreshCw } from 'lucide-react';
+import { MapPin, Zap, ExternalLink, Building2, GraduationCap, Laptop, Calendar, RefreshCw, Briefcase, User, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import api from '../services/api';
 
+const JOB_TYPES = ['Full-time', 'Part-time', 'Internship', 'Remote', 'Freelance', 'Walk-in'];
+const EXPERIENCE_LEVELS = ['Fresher', 'Junior (1-2 yrs)', 'Mid (3-5 yrs)', 'Senior (5+ yrs)'];
+const POPULAR_CITIES = ['Hyderabad', 'Bangalore', 'Chennai', 'Mumbai', 'Delhi', 'Pune', 'Kolkata', 'Ahmedabad'];
+
 export default function OpportunitiesPage() {
   const [location, setLocation] = useState('');
+  const [skills, setSkills] = useState('');
+  const [jobType, setJobType] = useState('');
+  const [experienceLevel, setExperienceLevel] = useState('Fresher');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [activeTab, setActiveTab] = useState('online');
 
+  useEffect(() => {
+    api.get('/career/skills/profile').then(r => {
+      if (r.data.profile) {
+        setSkills(r.data.profile.currentSkills?.map(s => s.name).join(', ') || '');
+      }
+    }).catch(() => {});
+  }, []);
+
   const find = async () => {
+    if (!location.trim()) return toast.error('Please enter your location');
     setLoading(true);
     try {
-      const { data } = await api.post('/career/opportunities', { location });
+      const { data } = await api.post('/career/opportunities', { location, skills, jobType, experienceLevel });
       setResult(data.result);
       toast.success('Opportunities found! 📍');
     } catch (err) {
@@ -43,26 +59,64 @@ export default function OpportunitiesPage() {
         </motion.div>
 
         {/* Search */}
-        <div className="glass-card p-6">
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <label className="text-sm text-slate-300 font-medium mb-1.5 block">Your Location</label>
+        <div className="glass-card p-6 space-y-4">
+          <h2 className="text-white font-semibold">Search Preferences</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm text-slate-300 font-medium mb-1.5 block">Your Location *</label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input value={location} onChange={e => setLocation(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && find()}
-                  placeholder="e.g. Hyderabad, Bangalore, Delhi, India" className="input-field pl-10" />
+                  placeholder="e.g. Hyderabad, Bangalore, Delhi" className="input-field pl-10" />
+              </div>
+              {/* Quick city buttons */}
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {POPULAR_CITIES.map(city => (
+                  <button key={city} onClick={() => setLocation(city)}
+                    className={`text-xs px-2.5 py-1 rounded-lg border transition-all
+                      ${location === city ? 'bg-primary-500/20 border-primary-500/50 text-primary-300' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:border-white/20'}`}>
+                    {city}
+                  </button>
+                ))}
               </div>
             </div>
-            <div className="flex items-end">
-              <motion.button onClick={find} disabled={loading}
-                whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-                className="btn-primary flex items-center gap-2 h-12 px-6">
-                {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Zap className="w-5 h-5" />}
-                {loading ? 'Finding...' : 'Find'}
-              </motion.button>
+            <div>
+              <label className="text-sm text-slate-300 font-medium mb-1.5 block">Your Skills</label>
+              <input value={skills} onChange={e => setSkills(e.target.value)}
+                placeholder="e.g. React, Python, Java..." className="input-field" />
+            </div>
+            <div>
+              <label className="text-sm text-slate-300 font-medium mb-1.5 block">Job Type</label>
+              <div className="flex flex-wrap gap-2">
+                {JOB_TYPES.map(type => (
+                  <button key={type} onClick={() => setJobType(jobType === type ? '' : type)}
+                    className={`text-xs px-3 py-1.5 rounded-lg border transition-all
+                      ${jobType === type ? 'bg-primary-500/20 border-primary-500/50 text-primary-300' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}>
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-slate-300 font-medium mb-1.5 block">Experience Level</label>
+              <div className="flex flex-wrap gap-2">
+                {EXPERIENCE_LEVELS.map(level => (
+                  <button key={level} onClick={() => setExperienceLevel(level)}
+                    className={`text-xs px-3 py-1.5 rounded-lg border transition-all
+                      ${experienceLevel === level ? 'bg-accent-green/20 border-accent-green/50 text-accent-green' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'}`}>
+                    {level}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+          <motion.button onClick={find} disabled={loading}
+            whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+            className="btn-primary w-full flex items-center justify-center gap-2 h-12">
+            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Zap className="w-5 h-5" />}
+            {loading ? 'Finding opportunities...' : `Find Opportunities in ${location || 'Your City'}`}
+          </motion.button>
         </div>
 
         {result && (

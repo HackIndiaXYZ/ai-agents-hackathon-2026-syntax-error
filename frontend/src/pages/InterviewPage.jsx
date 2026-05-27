@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Zap, ChevronRight, CheckCircle, Clock, Star, AlertCircle, RotateCcw, Send } from 'lucide-react';
+import { Mic, Zap, ChevronRight, CheckCircle, Clock, Star, AlertCircle, RotateCcw, Send, Download, BookOpen, MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import api from '../services/api';
@@ -112,6 +112,120 @@ export default function InterviewPage() {
   const scoreColor = (s) => s >= 8 ? 'text-green-400' : s >= 6 ? 'text-yellow-400' : 'text-red-400';
   const scoreBg = (s) => s >= 8 ? 'bg-green-500' : s >= 6 ? 'bg-yellow-500' : 'bg-red-500';
 
+  const downloadGuide = () => {
+    const type = INTERVIEW_TYPES.find(t => t.id === interviewType);
+    const skillList = skills.split(',').map(s => s.trim()).filter(Boolean);
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html><html><head>
+      <title>Interview Guide - ${targetRole}</title>
+      <style>
+        body{font-family:'Segoe UI',sans-serif;padding:32px;max-width:750px;margin:0 auto;background:#fff;color:#1a1a2e}
+        h1{color:#6366f1;font-size:26px;margin-bottom:4px}
+        h2{color:#4f46e5;font-size:16px;margin:24px 0 8px;border-bottom:2px solid #e0e7ff;padding-bottom:6px}
+        h3{color:#374151;font-size:14px;margin:12px 0 4px}
+        p,li{color:#4b5563;font-size:13px;line-height:1.7}
+        .tip{background:#f0fdf4;border-left:4px solid #10b981;padding:10px 14px;border-radius:4px;margin:8px 0}
+        .warn{background:#fffbeb;border-left:4px solid #f59e0b;padding:10px 14px;border-radius:4px;margin:8px 0}
+        .star{background:#eff6ff;border-left:4px solid #6366f1;padding:10px 14px;border-radius:4px;margin:8px 0}
+        ul{padding-left:20px}
+        .meta{color:#6b7280;font-size:12px;margin-bottom:24px}
+        @media print{body{padding:16px}}
+      </style></head><body>
+      <h1>🎯 Interview Preparation Guide</h1>
+      <div class="meta">
+        <strong>Role:</strong> ${targetRole} &nbsp;|&nbsp;
+        <strong>Type:</strong> ${type?.label || interviewType} &nbsp;|&nbsp;
+        <strong>Skills:</strong> ${skillList.join(', ')}<br/>
+        <strong>Generated:</strong> ${new Date().toLocaleDateString()}
+      </div>
+
+      <h2>📋 Before the Interview</h2>
+      <ul>
+        <li>Research the company thoroughly — products, culture, recent news</li>
+        <li>Review the job description and match your skills to requirements</li>
+        <li>Prepare 3-5 specific examples from your experience using STAR method</li>
+        <li>Test your tech setup (camera, mic, internet) 30 minutes before</li>
+        <li>Dress professionally even for remote interviews</li>
+        <li>Prepare 3 thoughtful questions to ask the interviewer</li>
+      </ul>
+
+      <h2>🗣️ How to Behave & Communicate</h2>
+      <div class="tip">Speak clearly and at a moderate pace. Pause briefly before answering to collect your thoughts — this shows confidence, not hesitation.</div>
+      <ul>
+        <li>Maintain eye contact (look at the camera for video calls)</li>
+        <li>Use positive body language — sit upright, smile naturally</li>
+        <li>Listen carefully to the full question before answering</li>
+        <li>If you don't know something, say "I haven't worked with that directly, but here's how I'd approach it..."</li>
+        <li>Avoid filler words (um, uh, like) — practice pausing instead</li>
+        <li>Show enthusiasm for the role and company</li>
+      </ul>
+
+      <h2>⭐ STAR Method for Behavioral Questions</h2>
+      <div class="star">
+        <strong>S</strong>ituation — Set the context briefly<br/>
+        <strong>T</strong>ask — What was your responsibility?<br/>
+        <strong>A</strong>ction — What specific steps did YOU take?<br/>
+        <strong>R</strong>esult — What was the measurable outcome?
+      </div>
+      <p>Example: "Tell me about a challenging project" → Describe the project (S), your role (T), the specific decisions you made (A), and the impact/result with numbers if possible (R).</p>
+
+      ${interviewType === 'technical' || interviewType === 'mixed' ? `
+      <h2>💻 Technical Round Tips for ${targetRole}</h2>
+      <ul>
+        <li>Think out loud — explain your reasoning as you solve problems</li>
+        <li>Clarify requirements before jumping into solutions</li>
+        <li>Start with a brute-force solution, then optimize</li>
+        <li>Discuss time and space complexity of your solutions</li>
+        <li>For ${skillList.slice(0,3).join(', ')} — review core concepts, common patterns, and recent updates</li>
+        <li>Practice coding on a whiteboard or shared editor beforehand</li>
+      </ul>` : ''}
+
+      ${interviewType === 'hr' || interviewType === 'mixed' ? `
+      <h2>👔 HR Round — Common Questions & Tips</h2>
+      <ul>
+        <li>"Tell me about yourself" — 2-minute structured pitch: background → skills → why this role</li>
+        <li>"Why do you want this job?" — Connect your goals to the company's mission</li>
+        <li>"What's your weakness?" — Choose a real weakness you're actively improving</li>
+        <li>"Where do you see yourself in 5 years?" — Show ambition aligned with the company</li>
+        <li>Salary negotiation: Research market rates, give a range, not a single number</li>
+      </ul>` : ''}
+
+      <h2>🚫 Common Mistakes to Avoid</h2>
+      <div class="warn">
+        <ul style="margin:0;padding-left:16px">
+          <li>Badmouthing previous employers</li>
+          <li>Giving vague answers without specific examples</li>
+          <li>Not asking any questions at the end</li>
+          <li>Lying or exaggerating your experience</li>
+          <li>Checking your phone or being distracted</li>
+          <li>Forgetting to follow up with a thank-you email</li>
+        </ul>
+      </div>
+
+      <h2>📝 Key Topics to Study for ${targetRole}</h2>
+      <ul>
+        ${skillList.map(s => `<li><strong>${s}</strong> — core concepts, best practices, common interview questions</li>`).join('')}
+        <li>System design basics (for senior roles)</li>
+        <li>Data structures & algorithms fundamentals</li>
+        <li>Version control (Git) workflows</li>
+      </ul>
+
+      <h2>✅ After the Interview</h2>
+      <ul>
+        <li>Send a thank-you email within 24 hours</li>
+        <li>Note down questions you struggled with for future practice</li>
+        <li>Follow up if you haven't heard back within the stated timeline</li>
+      </ul>
+
+      <p style="margin-top:32px;color:#9ca3af;font-size:11px;text-align:center">Generated by CareerIQ AI Platform — Good luck! 🍀</p>
+      </body></html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6">
@@ -167,11 +281,42 @@ export default function InterviewPage() {
                   </div>
                 </div>
 
-                <motion.button onClick={startInterview} disabled={loading}
-                  whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-                  className="btn-primary w-full flex items-center justify-center gap-2">
-                  {loading ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Preparing interview...</> : <><Zap className="w-5 h-5" /> Start Mock Interview</>}
-                </motion.button>
+                <div className="flex gap-3">
+                  <motion.button onClick={startInterview} disabled={loading}
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                    className="btn-primary flex-1 flex items-center justify-center gap-2">
+                    {loading ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Preparing...</> : <><Zap className="w-5 h-5" /> Start Mock Interview</>}
+                  </motion.button>
+                  <button onClick={downloadGuide}
+                    className="btn-ghost flex items-center gap-2 px-4">
+                    <Download className="w-4 h-4" /> Guide PDF
+                  </button>
+                </div>
+              </div>
+
+              {/* Notes to study */}
+              <div className="glass-card p-5 border border-accent-cyan/20">
+                <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-accent-cyan" /> Quick Study Notes
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/8">
+                    <p className="text-accent-cyan font-semibold mb-1">STAR Method</p>
+                    <p className="text-slate-400 text-xs">Situation → Task → Action → Result. Use for all behavioral questions.</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/8">
+                    <p className="text-accent-green font-semibold mb-1">Body Language</p>
+                    <p className="text-slate-400 text-xs">Eye contact, upright posture, smile. Pause before answering.</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/8">
+                    <p className="text-accent-yellow font-semibold mb-1">Technical Tips</p>
+                    <p className="text-slate-400 text-xs">Think out loud. Clarify before solving. Start simple, then optimize.</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 border border-white/8">
+                    <p className="text-accent-purple font-semibold mb-1">HR Tips</p>
+                    <p className="text-slate-400 text-xs">Research the company. Prepare 3 questions to ask. Follow up after.</p>
+                  </div>
+                </div>
               </div>
 
               {/* History */}

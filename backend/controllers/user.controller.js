@@ -64,6 +64,26 @@ const getDevices = async (req, res) => {
   res.json({ success: true, devices: req.user.loginDevices || [] });
 };
 
+// @desc    Revoke device access
+const revokeDevice = async (req, res, next) => {
+  try {
+    const { deviceIndex, password } = req.body;
+    const user = await User.findById(req.user._id).select('+password');
+    
+    if (user.password) {
+      const isMatch = await user.comparePassword(password);
+      if (!isMatch) return res.status(400).json({ success: false, message: 'Incorrect password.' });
+    }
+    
+    if (deviceIndex === 0) return res.status(400).json({ success: false, message: 'Cannot revoke current device.' });
+    
+    user.loginDevices.splice(deviceIndex, 1);
+    await user.save({ validateBeforeSave: false });
+    
+    res.json({ success: true, message: 'Device access revoked.' });
+  } catch (error) { next(error); }
+};
+
 // @desc    Delete account
 const deleteAccount = async (req, res, next) => {
   try {
@@ -88,4 +108,4 @@ const deleteAccount = async (req, res, next) => {
   }
 };
 
-module.exports = { updateProfile, changePassword, getActivity, getDevices, deleteAccount };
+module.exports = { updateProfile, changePassword, getActivity, getDevices, revokeDevice, deleteAccount };

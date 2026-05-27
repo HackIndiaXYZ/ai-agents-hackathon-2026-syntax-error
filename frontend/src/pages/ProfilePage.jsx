@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { User, Lock, Activity, Monitor, Trash2, Save, Camera, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Lock, Activity, Monitor, Trash2, Save, Camera, CheckCircle, AlertCircle, Upload, Shield, LogOut } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import useAuthStore from '../store/authStore';
@@ -13,10 +13,30 @@ const TABS = [
   { id: 'devices', label: 'Devices', icon: Monitor },
 ];
 
+const MALE_AVATARS = [
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=male1&gender=male',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=male2&gender=male',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=male3&gender=male',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=male4&gender=male',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=male5&gender=male',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=male6&gender=male',
+];
+const FEMALE_AVATARS = [
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=female1&gender=female',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=female2&gender=female',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=female3&gender=female',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=female4&gender=female',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=female5&gender=female',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=female6&gender=female',
+];
+
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore();
   const [tab, setTab] = useState('profile');
   const [saving, setSaving] = useState(false);
+  const [gender, setGender] = useState('male');
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const fileInputRef = useRef(null);
   const [profile, setProfile] = useState({
     fullName: user?.fullName || '',
     company: user?.company || '',
@@ -31,6 +51,8 @@ export default function ProfilePage() {
   const [devices, setDevices] = useState([]);
   const [showDelete, setShowDelete] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
+  const [blockingDevice, setBlockingDevice] = useState(null);
+  const [blockPassword, setBlockPassword] = useState('');
 
   useEffect(() => {
     if (tab === 'activity') api.get('/users/activity').then(r => setActivity(r.data.activity || [])).catch(() => {});
@@ -68,7 +90,31 @@ export default function ProfilePage() {
     } catch (err) { toast.error(err.response?.data?.message || 'Delete failed'); }
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return toast.error('Image must be under 2MB');
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setProfile(p => ({ ...p, avatar: ev.target.result }));
+      toast.success('Image selected! Save to apply.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRevokeDevice = async (deviceIndex, password) => {
+    if (!password) return toast.error('Enter your password to revoke access');
+    try {
+      await api.post('/users/revoke-device', { deviceIndex, password });
+      setDevices(prev => prev.filter((_, i) => i !== deviceIndex));
+      setBlockingDevice(null);
+      setBlockPassword('');
+      toast.success('Device access revoked');
+    } catch (err) { toast.error(err.response?.data?.message || 'Failed to revoke device'); }
+  };
+
   const completionScore = user?.profileCompletionScore || 0;
+  const avatarList = gender === 'female' ? FEMALE_AVATARS : MALE_AVATARS;
 
   return (
     <DashboardLayout>
@@ -77,8 +123,9 @@ export default function ProfilePage() {
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4">
           <div className="relative">
             <img src={profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`}
-              alt="avatar" className="w-16 h-16 rounded-2xl border-2 border-primary-500/40" />
-            <button className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center">
+              alt="avatar" className="w-16 h-16 rounded-2xl border-2 border-primary-500/40 object-cover bg-white/10" />
+            <button onClick={() => setShowAvatarPicker(p => !p)}
+              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center hover:bg-primary-400 transition-colors">
               <Camera className="w-3 h-3 text-white" />
             </button>
           </div>
@@ -93,6 +140,43 @@ export default function ProfilePage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Avatar Picker */}
+        {showAvatarPicker && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-semibold">Choose Avatar</h3>
+              <button onClick={() => setShowAvatarPicker(false)} className="text-slate-500 hover:text-white text-sm">Close</button>
+            </div>
+            {/* Upload option */}
+            <div className="mb-4">
+              <label className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-white/20 hover:border-primary-500/50 cursor-pointer transition-all group">
+                <Upload className="w-5 h-5 text-slate-500 group-hover:text-primary-400" />
+                <span className="text-slate-400 text-sm group-hover:text-white">Upload your own photo (max 2MB)</span>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+              </label>
+            </div>
+            {/* Gender selector */}
+            <div className="flex gap-2 mb-3">
+              {['male', 'female'].map(g => (
+                <button key={g} onClick={() => setGender(g)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium capitalize transition-all
+                    ${gender === g ? 'bg-primary-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}>
+                  {g === 'male' ? '👨 Male' : '👩 Female'} Avatars
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-6 gap-2">
+              {avatarList.map((url, i) => (
+                <button key={i} onClick={() => { setProfile(p => ({ ...p, avatar: url })); setShowAvatarPicker(false); }}
+                  className={`rounded-xl overflow-hidden border-2 transition-all hover:scale-105
+                    ${profile.avatar === url ? 'border-primary-500' : 'border-transparent hover:border-white/30'}`}>
+                  <img src={url} alt={`avatar ${i+1}`} className="w-full h-full bg-white/10" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -233,22 +317,54 @@ export default function ProfilePage() {
         {/* Devices Tab */}
         {tab === 'devices' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card p-6">
-            <h2 className="text-white font-bold mb-4">Login Devices</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white font-bold">Login Devices</h2>
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Shield className="w-3 h-3" /> {devices.length} device{devices.length !== 1 ? 's' : ''} logged in
+              </div>
+            </div>
             {devices.length === 0 ? (
               <p className="text-slate-400 text-sm">No devices recorded.</p>
             ) : (
               <div className="space-y-3">
                 {devices.map((d, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/8">
-                    <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                      <Monitor className="w-5 h-5 text-slate-400" />
+                  <div key={i} className="rounded-xl bg-white/5 border border-white/8 overflow-hidden">
+                    <div className="flex items-center gap-4 p-4">
+                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                        <Monitor className="w-5 h-5 text-slate-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-medium text-sm">{d.device || 'Unknown Device'}</p>
+                        <p className="text-slate-500 text-xs">{d.ip} · Last seen {new Date(d.lastSeen).toLocaleDateString()}</p>
+                        {d.userAgent && <p className="text-slate-600 text-xs truncate max-w-xs">{d.userAgent.slice(0, 60)}...</p>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {i === 0 && (
+                          <span className="text-xs text-green-400 bg-green-500/10 border border-green-500/30 px-2 py-0.5 rounded-full">Current</span>
+                        )}
+                        {i !== 0 && (
+                          <button onClick={() => setBlockingDevice(blockingDevice === i ? null : i)}
+                            className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-500/60 px-3 py-1 rounded-lg transition-all flex items-center gap-1">
+                            <LogOut className="w-3 h-3" /> Revoke
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-white font-medium text-sm">{d.device || 'Unknown Device'}</p>
-                      <p className="text-slate-500 text-xs">{d.ip} · Last seen {new Date(d.lastSeen).toLocaleDateString()}</p>
-                    </div>
-                    {i === 0 && (
-                      <span className="text-xs text-green-400 bg-green-500/10 border border-green-500/30 px-2 py-0.5 rounded-full">Current</span>
+                    {blockingDevice === i && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                        className="px-4 pb-4 border-t border-red-500/20 bg-red-500/5">
+                        <p className="text-red-400 text-xs font-semibold mt-3 mb-2">Enter your password to revoke this device's access:</p>
+                        <div className="flex gap-2">
+                          <input type="password" value={blockPassword} onChange={e => setBlockPassword(e.target.value)}
+                            placeholder="Your password" className="input-field text-sm flex-1 py-2 border-red-500/30" />
+                          <button onClick={() => handleRevokeDevice(i, blockPassword)}
+                            className="px-4 py-2 rounded-xl bg-red-500 text-white text-sm hover:bg-red-600 transition-all">
+                            Confirm
+                          </button>
+                          <button onClick={() => { setBlockingDevice(null); setBlockPassword(''); }}
+                            className="btn-ghost text-sm py-2 px-3">Cancel</button>
+                        </div>
+                      </motion.div>
                     )}
                   </div>
                 ))}

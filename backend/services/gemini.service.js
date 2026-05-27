@@ -189,8 +189,14 @@ const parseJSON = (raw) => {
 
 const mockSkillResult = (skills, targetRole) => ({
   skillGaps: [
-    { skill: "Advanced React.js & State Management", priority: "high", reason: `Crucial for clean code structures in ${targetRole || 'Developer'} applications.`, estimatedWeeks: 3 },
-    { skill: "API Performance & Security", priority: "medium", reason: "Required to build scale-resilient backends.", estimatedWeeks: 2 }
+    { skill: "Advanced React.js & State Management", priority: "high", reason: `Crucial for clean code structures in ${targetRole || 'Developer'} applications.`, estimatedWeeks: 3, courses: [
+      { name: "React - The Complete Guide", platform: "Udemy", url: "https://udemy.com/course/react-the-complete-guide-incl-redux", duration: "48 hours", free: false },
+      { name: "React Official Docs", platform: "React.dev", url: "https://react.dev/learn", duration: "Self-paced", free: true }
+    ]},
+    { skill: "API Performance & Security", priority: "medium", reason: "Required to build scale-resilient backends.", estimatedWeeks: 2, courses: [
+      { name: "Node.js API Masterclass", platform: "Udemy", url: "https://udemy.com", duration: "18 hours", free: false },
+      { name: "Web Security Fundamentals", platform: "OWASP", url: "https://owasp.org", duration: "Self-paced", free: true }
+    ]}
   ],
   careerPaths: [
     { role: targetRole || "Frontend Developer", matchScore: 78, description: `Develop modular user interfaces utilizing ${skills[0] || 'core web stack'}.`, avgSalary: "4-10 LPA" },
@@ -211,7 +217,15 @@ const mockSkillResult = (skills, targetRole) => ({
     "Build a project demonstrating secure, authenticated routing",
     "Conduct timed mock challenges around algorithms"
   ],
-  overallReadiness: 72
+  overallReadiness: 72,
+  suggestedCourses: [
+    { name: "The Complete Web Developer Bootcamp", platform: "Udemy", url: "https://udemy.com/course/the-complete-web-development-bootcamp", duration: "65 hours", free: false },
+    { name: "freeCodeCamp Full Stack Certification", platform: "freeCodeCamp", url: "https://freecodecamp.org/learn", duration: "300 hours", free: true },
+    { name: "CS50 Web Programming with Python & JS", platform: "edX / Harvard", url: "https://cs50.harvard.edu/web", duration: "12 weeks", free: true },
+    { name: "JavaScript Algorithms & Data Structures", platform: "freeCodeCamp", url: "https://freecodecamp.org/learn/javascript-algorithms-and-data-structures", duration: "300 hours", free: true },
+    { name: "Full Stack Open", platform: "University of Helsinki", url: "https://fullstackopen.com", duration: "Self-paced", free: true },
+    { name: "The Odin Project", platform: "The Odin Project", url: "https://theodinproject.com", duration: "Self-paced", free: true }
+  ]
 });
 
 const mockResumeResult = (resumeData, targetRole) => ({
@@ -291,13 +305,32 @@ const mockInterviewResult = (role, type, skills) => ({
 });
 
 const mockEvaluateAnswerResult = (question, userAnswer, role) => {
-  const score = userAnswer.length > 40 ? 8 : (userAnswer.length > 15 ? 6 : 4);
+  const trimmed = userAnswer?.trim() || '';
+  const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
+  // Accurate scoring based on answer quality
+  let score;
+  if (wordCount < 5) score = 2;
+  else if (wordCount < 15) score = 4;
+  else if (wordCount < 30) score = 5;
+  else if (wordCount < 60) score = 6;
+  else if (wordCount < 100) score = 7;
+  else score = 8;
+
+  const feedbacks = {
+    2: "Your answer is too brief to evaluate properly. Please provide a complete response.",
+    4: "Your answer is very short and lacks the depth expected for this role. Expand with specific examples.",
+    5: "Your answer covers the basics but needs more detail and concrete examples to stand out.",
+    6: "Decent answer but missing specific examples or metrics. Use the STAR method for behavioral questions.",
+    7: "Good answer with reasonable coverage. Adding quantified results would strengthen it further.",
+    8: "Strong answer with good structure. Minor improvements could make it excellent."
+  };
+
   return {
     score,
-    feedback: "Your response addresses the core components of the question. Elevating your answer with exact industry metrics will showcase senior competencies.",
-    strengths: ["Clear terminology usage", "Confident communication style"],
-    improvements: ["Incorporate specific load speed or efficiency metrics", "Describe modular coding approaches applied"],
-    betterAnswer: `For a ${role || 'Developer'}, a stellar response is: 'I systematically isolate state propagation cycles using browser debuggers, identify unnecessary parent renders, and implement modular memo structures.'`
+    feedback: feedbacks[score] || feedbacks[7],
+    strengths: wordCount > 20 ? ["Attempted to address the question", "Shows basic understanding"] : ["Made an attempt"],
+    improvements: ["Add specific examples from your experience", "Use the STAR method (Situation, Task, Action, Result)", "Include quantified achievements"],
+    betterAnswer: `For a ${role || 'Developer'} role, a strong answer would: clearly state the situation/context, describe specific actions you took, quantify the results achieved, and connect it to the skills required for this role.`
   };
 };
 
@@ -340,7 +373,7 @@ const mockOpportunitiesResult = (location, skills) => ({
 
 const runSkillAgent = async (skills, targetRole, experienceLevel, apiKey) => {
   try {
-    const prompt = `You are an expert career counselor and skill analysis agent. Analyze the following user profile and provide career guidance.\n\nUser Skills: ${skills.join(', ')}\nTarget Role: ${targetRole || 'Not specified'}\nExperience Level: ${experienceLevel || 'fresher'}\n\nReturn ONLY valid JSON (no markdown):\n{\n  "skillGaps": [{"skill": "React.js", "priority": "high", "reason": "why needed", "estimatedWeeks": 4}],\n  "careerPaths": [{"role": "Frontend Developer", "matchScore": 75, "description": "short desc", "avgSalary": "3-8 LPA"}],\n  "learningRoadmap": [{"step": 1, "skill": "React.js", "resources": ["freeCodeCamp", "official docs"], "weeks": 4, "priority": "high"}],\n  "strengths": ["HTML/CSS expertise", "JavaScript foundation"],\n  "summary": "2-3 sentence personalized career advice",\n  "nextSteps": ["Build a portfolio project", "Contribute to open source"],\n  "overallReadiness": 62\n}`;
+    const prompt = `You are an expert career counselor and skill analysis agent. Analyze the following user profile and provide career guidance.\n\nUser Skills: ${skills.join(', ')}\nTarget Role: ${targetRole || 'Not specified'}\nExperience Level: ${experienceLevel || 'fresher'}\n\nReturn ONLY valid JSON (no markdown):\n{\n  "skillGaps": [{"skill": "React.js", "priority": "high", "reason": "why needed", "estimatedWeeks": 4, "courses": [{"name": "React - The Complete Guide", "platform": "Udemy", "url": "https://udemy.com", "duration": "40 hours", "free": false}]}],\n  "careerPaths": [{"role": "Frontend Developer", "matchScore": 75, "description": "short desc", "avgSalary": "3-8 LPA"}],\n  "learningRoadmap": [{"step": 1, "skill": "React.js", "resources": ["freeCodeCamp", "official docs"], "weeks": 4, "priority": "high"}],\n  "strengths": ["HTML/CSS expertise", "JavaScript foundation"],\n  "summary": "2-3 sentence personalized career advice",\n  "nextSteps": ["Build a portfolio project", "Contribute to open source"],\n  "overallReadiness": 62,\n  "suggestedCourses": [\n    {"name": "The Complete Web Developer Bootcamp", "platform": "Udemy", "url": "https://udemy.com/course/the-complete-web-development-bootcamp", "duration": "65 hours", "free": false},\n    {"name": "freeCodeCamp Full Stack", "platform": "freeCodeCamp", "url": "https://freecodecamp.org", "duration": "300 hours", "free": true},\n    {"name": "CS50 Web Programming", "platform": "edX / Harvard", "url": "https://cs50.harvard.edu/web", "duration": "12 weeks", "free": true},\n    {"name": "JavaScript Algorithms and Data Structures", "platform": "freeCodeCamp", "url": "https://freecodecamp.org/learn/javascript-algorithms-and-data-structures", "duration": "300 hours", "free": true}\n  ]\n}`;
     const raw = await callLLM(prompt, apiKey);
     return parseJSON(raw);
   } catch (error) {
@@ -351,7 +384,7 @@ const runSkillAgent = async (skills, targetRole, experienceLevel, apiKey) => {
 
 const runResumeAgent = async (resumeData, targetRole, apiKey) => {
   try {
-    const prompt = `You are an expert ATS resume optimizer and career coach. Improve this resume for maximum ATS score and recruiter appeal.\n\nResume Data: ${JSON.stringify(resumeData)}\nTarget Role: ${targetRole || 'Software Developer'}\n\nReturn ONLY valid JSON:\n{\n  "improvedSummary": "powerful 3-sentence professional summary",\n  "atsScore": 78,\n  "keywordSuggestions": ["React.js", "REST APIs", "Agile"],\n  "suggestions": ["Add quantified achievements", "Include GitHub link", "Use action verbs"],\n  "improvedBullets": {},\n  "missingSections": ["Projects section needed", "Add certifications"],\n  "overallFeedback": "2 sentence overall feedback",\n  "strengthAreas": ["Good education section", "Clear skills list"]\n}`;
+    const prompt = `You are an expert ATS resume optimizer and career coach. Improve this resume for maximum ATS score (aim for 85-98%) and recruiter appeal.\n\nResume Data: ${JSON.stringify(resumeData)}\nTarget Role: ${targetRole || 'Software Developer'}\n\nATS scoring criteria:\n- Keywords matching job description: 30%\n- Proper formatting and sections: 20%\n- Quantified achievements: 20%\n- Action verbs: 15%\n- Contact info completeness: 15%\n\nReturn ONLY valid JSON:\n{\n  "improvedSummary": "powerful 3-sentence professional summary with keywords",\n  "atsScore": 88,\n  "keywordSuggestions": ["React.js", "REST APIs", "Agile", "CI/CD", "TypeScript"],\n  "suggestions": ["Add quantified achievements like 'Improved performance by 40%'", "Include GitHub link", "Use action verbs: Built, Developed, Optimized, Led"],\n  "improvedBullets": {},\n  "missingSections": ["Projects section needed", "Add certifications"],\n  "overallFeedback": "2 sentence overall feedback",\n  "strengthAreas": ["Good education section", "Clear skills list"]\n}`;
     const raw = await callLLM(prompt, apiKey);
     return parseJSON(raw);
   } catch (error) {
@@ -384,7 +417,8 @@ const runInterviewAgent = async (role, type, skills, apiKey) => {
 
 const evaluateAnswer = async (question, userAnswer, role, apiKey) => {
   try {
-    const prompt = `You are an expert interviewer. Evaluate this interview answer professionally.\n\nQuestion: ${question}\nRole: ${role}\nCandidate Answer: ${userAnswer}\n\nReturn ONLY valid JSON:\n{\n  "score": 7,\n  "feedback": "Your answer was clear but lacked specific examples.",\n  "strengths": ["Clear communication"],\n  "improvements": ["Add quantified results", "Use STAR method"],\n  "betterAnswer": "A stronger answer would include..."\n}`;
+    const answerLength = userAnswer?.trim().length || 0;
+    const prompt = `You are a strict but fair professional interviewer evaluating a candidate's answer. Be ACCURATE and HONEST in scoring - do not give high scores for poor answers.\n\nRole: ${role || 'Software Developer'}\nQuestion: ${question}\nCandidate Answer: "${userAnswer}"\n\nScoring criteria:\n- Score 1-3: Very poor, off-topic, or too short (under 20 words)\n- Score 4-5: Below average, missing key points\n- Score 6-7: Average, covers basics but lacks depth\n- Score 8-9: Good, well-structured with examples\n- Score 10: Excellent, comprehensive with specific metrics/examples\n\nAnswer length: ${answerLength} characters. If answer is very short or vague, score accordingly (3-5 max).\n\nReturn ONLY valid JSON:\n{\n  "score": 7,\n  "feedback": "Specific, honest feedback about this exact answer",\n  "strengths": ["specific strength from their answer"],\n  "improvements": ["specific improvement needed"],\n  "betterAnswer": "A model answer for this specific question and role"\n}`;
     const raw = await callLLM(prompt, apiKey);
     return parseJSON(raw);
   } catch (error) {
@@ -395,7 +429,9 @@ const evaluateAnswer = async (question, userAnswer, role, apiKey) => {
 
 const generateCareerRoadmap = async (profile, apiKey) => {
   try {
-    const prompt = `You are a career coach. Create a detailed 90-day career action plan.\n\nProfile: ${JSON.stringify(profile)}\n\nReturn ONLY valid JSON:\n{\n  "roadmap": {\n    "week1_2": {"focus": "Foundation", "tasks": ["Complete JavaScript basics", "Build portfolio site"], "goal": "Setup online presence"},\n    "week3_4": {"focus": "Skill Building", "tasks": ["Learn React basics", "Do 2 projects"], "goal": "Build React projects"},\n    "month2": {"focus": "Applications", "tasks": ["Apply to 10 jobs", "Practice interviews daily"], "goal": "Land 3 interviews"},\n    "month3": {"focus": "Offers", "tasks": ["Negotiate salary", "Choose best offer"], "goal": "Get first job offer"}\n  },\n  "dailyRoutine": ["1hr learning", "30min coding practice", "10min LinkedIn networking"],\n  "motivationalTip": "Consistency beats perfection. Show up every day.",\n  "milestones": [\n    {"day": 7, "milestone": "Portfolio website live", "achieved": false},\n    {"day": 30, "milestone": "First 10 job applications sent", "achieved": false},\n    {"day": 60, "milestone": "First interview attended", "achieved": false},\n    {"day": 90, "milestone": "Job offer received", "achieved": false}\n  ]\n}`;
+    const duration = profile.duration || 90;
+    const phases = duration <= 30 ? 'week1_2, week3_4' : duration <= 60 ? 'week1_2, week3_4, month2' : 'week1_2, week3_4, month2, month3';
+    const prompt = `You are a career coach. Create a detailed ${duration}-day career action plan.\n\nProfile: ${JSON.stringify(profile)}\nDuration: ${duration} days\n\nReturn ONLY valid JSON:\n{\n  "roadmap": {\n    "week1_2": {"focus": "Foundation", "tasks": ["Complete JavaScript basics", "Build portfolio site"], "goal": "Setup online presence"},\n    "week3_4": {"focus": "Skill Building", "tasks": ["Learn React basics", "Do 2 projects"], "goal": "Build React projects"},\n    "month2": {"focus": "Applications", "tasks": ["Apply to 10 jobs", "Practice interviews daily"], "goal": "Land 3 interviews"},\n    "month3": {"focus": "Offers", "tasks": ["Negotiate salary", "Choose best offer"], "goal": "Get first job offer"}\n  },\n  "dailyRoutine": ["1hr learning", "30min coding practice", "10min LinkedIn networking"],\n  "motivationalTip": "Consistency beats perfection. Show up every day.",\n  "milestones": [\n    {"day": 7, "milestone": "Portfolio website live", "achieved": false},\n    {"day": 30, "milestone": "First 10 job applications sent", "achieved": false},\n    {"day": ${Math.round(duration * 0.67)}, "milestone": "First interview attended", "achieved": false},\n    {"day": ${duration}, "milestone": "Job offer received", "achieved": false}\n  ]\n}`;
     const raw = await callLLM(prompt, apiKey);
     return parseJSON(raw);
   } catch (error) {

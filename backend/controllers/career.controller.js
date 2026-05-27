@@ -258,11 +258,13 @@ exports.getInterviewHistory = async (req, res, next) => {
 exports.generateRoadmap = async (req, res, next) => {
   try {
     const profile = await SkillProfile.findOne({ user: req.user._id });
+    const duration = req.body.duration || 90;
     const userProfile = {
       skills: profile?.currentSkills?.map(s => s.name) || req.body.skills || [],
       targetRole: profile?.targetRole || req.body.targetRole || 'Software Developer',
       experienceLevel: profile?.experienceLevel || 'fresher',
-      education: profile?.education || {}
+      education: profile?.education || {},
+      duration
     };
     const llmConfig = await getUserLLMConfig(req.user._id);
     const result = await generateCareerRoadmap(userProfile, llmConfig);
