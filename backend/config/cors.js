@@ -9,6 +9,21 @@ function normalizeOrigin(url) {
   return trimmed.replace(/\/+$/, '');
 }
 
+// Vercel production + preview frontends for this project
+const VERCEL_FRONTEND_ORIGIN = /^https:\/\/hm-azure-ten[\w.-]*\.vercel\.app$/;
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+
+  const normalized = normalizeOrigin(origin);
+  if (!normalized) return true;
+
+  if (allowedOriginsList.includes(normalized)) return true;
+  if (VERCEL_FRONTEND_ORIGIN.test(normalized)) return true;
+
+  return false;
+}
+
 function getAllowedOrigins() {
   const origins = new Set();
 
@@ -23,10 +38,7 @@ function getAllowedOrigins() {
     process.env.ALLOWED_ORIGINS.split(',').forEach((entry) => add(entry));
   }
 
-  // Production defaults (override via FRONTEND_URL / ALLOWED_ORIGINS on Vercel)
-  if (process.env.NODE_ENV === 'production') {
-    add('https://hm-azure-ten.vercel.app');
-  }
+  add('https://hm-azure-ten.vercel.app');
 
   if (process.env.NODE_ENV !== 'production') {
     add('http://localhost:5173');
@@ -40,16 +52,11 @@ function getAllowedOrigins() {
   return [...origins];
 }
 
-const allowedOrigins = getAllowedOrigins();
+const allowedOriginsList = getAllowedOrigins();
 
 const corsOptions = {
   origin(origin, callback) {
-    // Same-origin or non-browser clients (curl, server-to-server)
-    if (!origin) {
-      return callback(null, true);
-    }
-    const normalized = normalizeOrigin(origin);
-    if (normalized && allowedOrigins.includes(normalized)) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
     callback(null, false);
@@ -63,4 +70,4 @@ const corsOptions = {
   maxAge: 86400,
 };
 
-module.exports = { corsOptions, getAllowedOrigins, normalizeOrigin };
+module.exports = { corsOptions, getAllowedOrigins, normalizeOrigin, isAllowedOrigin };
