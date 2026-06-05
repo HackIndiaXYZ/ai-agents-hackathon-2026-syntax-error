@@ -13,28 +13,43 @@ const TABS = [
   { id: 'devices', label: 'Devices', icon: Monitor },
 ];
 
-const MALE_AVATARS = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=male1&gender=male',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=male2&gender=male',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=male3&gender=male',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=male4&gender=male',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=male5&gender=male',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=male6&gender=male',
+// Neutral professional avatars — no gender assumptions
+const NEUTRAL_AVATARS = [
+  'https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=alex&backgroundColor=b6e3f4',
+  'https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=morgan&backgroundColor=c0aede',
+  'https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=jordan&backgroundColor=ffd5dc',
+  'https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=casey&backgroundColor=d1f4d1',
+  'https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=riley&backgroundColor=ffdfbf',
+  'https://api.dicebear.com/7.x/avataaars-neutral/svg?seed=sam&backgroundColor=b6e3f4',
 ];
-const FEMALE_AVATARS = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=female1&gender=female',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=female2&gender=female',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=female3&gender=female',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=female4&gender=female',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=female5&gender=female',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=female6&gender=female',
+const PROFESSIONAL_AVATARS = [
+  'https://api.dicebear.com/7.x/personas/svg?seed=dev1',
+  'https://api.dicebear.com/7.x/personas/svg?seed=dev2',
+  'https://api.dicebear.com/7.x/personas/svg?seed=dev3',
+  'https://api.dicebear.com/7.x/personas/svg?seed=dev4',
+  'https://api.dicebear.com/7.x/personas/svg?seed=dev5',
+  'https://api.dicebear.com/7.x/personas/svg?seed=dev6',
+];
+const PIXEL_AVATARS = [
+  'https://api.dicebear.com/7.x/pixel-art-neutral/svg?seed=pix1',
+  'https://api.dicebear.com/7.x/pixel-art-neutral/svg?seed=pix2',
+  'https://api.dicebear.com/7.x/pixel-art-neutral/svg?seed=pix3',
+  'https://api.dicebear.com/7.x/pixel-art-neutral/svg?seed=pix4',
+  'https://api.dicebear.com/7.x/pixel-art-neutral/svg?seed=pix5',
+  'https://api.dicebear.com/7.x/pixel-art-neutral/svg?seed=pix6',
+];
+
+const AVATAR_CATEGORIES = [
+  { label: 'Illustrated', avatars: NEUTRAL_AVATARS },
+  { label: 'Professional', avatars: PROFESSIONAL_AVATARS },
+  { label: 'Pixel Art', avatars: PIXEL_AVATARS },
 ];
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore();
   const [tab, setTab] = useState('profile');
   const [saving, setSaving] = useState(false);
-  const [gender, setGender] = useState('male');
+  const [activeAvatarCategory, setActiveAvatarCategory] = useState(0);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const fileInputRef = useRef(null);
   const [profile, setProfile] = useState({
@@ -114,7 +129,7 @@ export default function ProfilePage() {
   };
 
   const completionScore = user?.profileCompletionScore || 0;
-  const avatarList = gender === 'female' ? FEMALE_AVATARS : MALE_AVATARS;
+  const avatarList = AVATAR_CATEGORIES[activeAvatarCategory]?.avatars || NEUTRAL_AVATARS;
 
   return (
     <DashboardLayout>
@@ -156,13 +171,14 @@ export default function ProfilePage() {
                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
               </label>
             </div>
-            {/* Gender selector */}
+            {/* Avatar category selector — no gender labels */}
             <div className="flex gap-2 mb-3">
-              {['male', 'female'].map(g => (
-                <button key={g} onClick={() => setGender(g)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-medium capitalize transition-all
-                    ${gender === g ? 'bg-primary-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}>
-                  {g === 'male' ? '👨 Male' : '👩 Female'} Avatars
+              {AVATAR_CATEGORIES.map((cat, idx) => (
+                <button key={cat.label} onClick={() => setActiveAvatarCategory(idx)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
+                    activeAvatarCategory === idx ? 'bg-primary-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'
+                  }`}>
+                  {cat.label}
                 </button>
               ))}
             </div>

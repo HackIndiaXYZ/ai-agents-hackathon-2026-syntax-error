@@ -22,13 +22,16 @@ const saveApiKey = async (req, res, next) => {
     }
     
     const { provider, apiKey } = req.body;
-    const validProviders = ['gemini', 'openrouter', 'openai', 'claude'];
+    const validProviders = ['gemini', 'openrouter', 'openai', 'claude', 'groq', 'deepseek'];
     
     if (!validProviders.includes(provider)) {
       return res.status(400).json({ success: false, message: 'Invalid provider.' });
     }
     
-    const fieldMap = { gemini: 'geminiKey', openrouter: 'openrouterKey', openai: 'openaiKey', claude: 'claudeKey' };
+    const fieldMap = { 
+      gemini: 'geminiKey', openrouter: 'openrouterKey', openai: 'openaiKey', 
+      claude: 'claudeKey', groq: 'groqKey', deepseek: 'deepseekKey' 
+    };
     const field = fieldMap[provider];
     
     let settings = await ApiSettings.findOne({ user: req.user._id });
@@ -48,7 +51,10 @@ const saveApiKey = async (req, res, next) => {
 const removeApiKey = async (req, res, next) => {
   try {
     const { provider } = req.body;
-    const fieldMap = { gemini: 'geminiKey', openrouter: 'openrouterKey', openai: 'openaiKey', claude: 'claudeKey' };
+    const fieldMap = { 
+      gemini: 'geminiKey', openrouter: 'openrouterKey', openai: 'openaiKey', 
+      claude: 'claudeKey', groq: 'groqKey', deepseek: 'deepseekKey' 
+    };
     const field = fieldMap[provider];
     if (!field) return res.status(400).json({ success: false, message: 'Invalid provider.' });
     
@@ -71,7 +77,10 @@ const testApiKey = async (req, res, next) => {
     if (!settings) return res.status(404).json({ success: false, message: 'No settings found.' });
     
     const keys = settings.getDecryptedKeys();
-    const fieldMap = { gemini: 'geminiKey', openrouter: 'openrouterKey', openai: 'openaiKey', claude: 'claudeKey' };
+    const fieldMap = { 
+      gemini: 'geminiKey', openrouter: 'openrouterKey', openai: 'openaiKey', 
+      claude: 'claudeKey', groq: 'groqKey', deepseek: 'deepseekKey' 
+    };
     const key = keys[fieldMap[provider]];
     
     if (!key) return res.status(400).json({ success: false, message: 'No API key for this provider.' });
@@ -83,31 +92,47 @@ const testApiKey = async (req, res, next) => {
       if (provider === 'gemini') {
         const resp = await axios.get(
           `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`,
-          { timeout: 5000 }
+          { timeout: 8000 }
         );
         isValid = resp.status === 200;
       } else if (provider === 'openai') {
         const resp = await axios.get('https://api.openai.com/v1/models', {
           headers: { Authorization: `Bearer ${key}` },
-          timeout: 5000
+          timeout: 8000
         });
         isValid = resp.status === 200;
       } else if (provider === 'openrouter') {
         const resp = await axios.get('https://openrouter.ai/api/v1/models', {
           headers: { Authorization: `Bearer ${key}` },
-          timeout: 5000
+          timeout: 8000
         });
         isValid = resp.status === 200;
       } else if (provider === 'claude') {
-        // Basic header check
         const resp = await axios.get('https://api.anthropic.com/v1/models', {
           headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-          timeout: 5000
+          timeout: 8000
+        });
+        isValid = resp.status === 200;
+      } else if (provider === 'groq') {
+        const resp = await axios.get('https://api.groq.com/openai/v1/models', {
+          headers: { Authorization: `Bearer ${key}` },
+          timeout: 8000
+        });
+        isValid = resp.status === 200;
+      } else if (provider === 'deepseek') {
+        // DeepSeek: test with a minimal completion
+        const resp = await axios.post('https://api.deepseek.com/v1/chat/completions', {
+          model: 'deepseek-chat',
+          messages: [{ role: 'user', content: 'Say OK' }],
+          max_tokens: 5
+        }, {
+          headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+          timeout: 8000
         });
         isValid = resp.status === 200;
       }
     } catch (e) {
-      error = e.response?.data?.error?.message || 'Connection failed';
+      error = e.response?.data?.error?.message || e.response?.data?.message || 'Connection failed';
     }
     
     // Update status

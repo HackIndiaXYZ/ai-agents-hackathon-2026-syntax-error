@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Zap, ChevronRight, CheckCircle, Clock, Star, AlertCircle, RotateCcw, Send, Download, BookOpen, MessageSquare } from 'lucide-react';
+import { Mic, Zap, ChevronRight, CheckCircle, Clock, Star, AlertCircle, RotateCcw, Send, Download, BookOpen, MessageSquare, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import api from '../services/api';
@@ -446,35 +446,121 @@ export default function InterviewPage() {
           {/* RESULTS */}
           {step === 'result' && finalResult && (
             <motion.div key="result" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="space-y-5">
+              {/* Score Card */}
               <div className="glass-card p-8 text-center">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500/30 to-accent-purple/20 border-2 border-primary-500/40 flex items-center justify-center mx-auto mb-4">
+                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-primary-500/30 to-accent-purple/20 border-2 border-primary-500/40 flex items-center justify-center mx-auto mb-4">
                   <span className="text-4xl font-black text-white">{finalResult.overallScore}%</span>
                 </div>
                 <h2 className="text-2xl font-black text-white mb-2">
-                  {finalResult.overallScore >= 70 ? '🎉 Great Performance!' : finalResult.overallScore >= 50 ? '👍 Good Effort!' : '💪 Keep Practicing!'}
+                  {finalResult.overallScore >= 80 ? '🎉 Excellent Performance!' :
+                   finalResult.overallScore >= 65 ? '👍 Good Effort!' :
+                   finalResult.overallScore >= 50 ? '💪 Decent Attempt!' : '📚 Keep Practicing!'}
                 </h2>
-                <p className="text-slate-400">Interview completed in {formatTime(timer)}</p>
+                <p className="text-slate-400 mb-2">Interview completed in {formatTime(timer)}</p>
+                {finalResult.performanceLevel && (
+                  <span className={`text-sm px-3 py-1 rounded-full border font-semibold ${
+                    finalResult.performanceLevel === 'Excellent' ? 'text-green-400 border-green-500/40 bg-green-500/10' :
+                    finalResult.performanceLevel === 'Good' ? 'text-blue-400 border-blue-500/40 bg-blue-500/10' :
+                    finalResult.performanceLevel === 'Average' ? 'text-yellow-400 border-yellow-500/40 bg-yellow-500/10' :
+                    'text-red-400 border-red-500/40 bg-red-500/10'
+                  }`}>
+                    {finalResult.performanceLevel}
+                  </span>
+                )}
               </div>
 
+              {/* Performance Report */}
+              {finalResult.report && (
+                <div className="glass-card p-6 border-l-4 border-primary-500">
+                  <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+                    <Star className="w-5 h-5 text-yellow-400" /> Performance Report
+                  </h3>
+                  <p className="text-slate-300 text-sm mb-4">{finalResult.report.summary}</p>
+
+                  <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/8 text-center">
+                      <div className="text-2xl font-black text-primary-400">{finalResult.answeredCount || 0}/{finalResult.totalQuestions || 0}</div>
+                      <div className="text-xs text-slate-500">Questions Answered</div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/8 text-center">
+                      <div className={`text-2xl font-black ${finalResult.readinessScore >= 70 ? 'text-green-400' : 'text-yellow-400'}`}>{finalResult.readinessScore || 0}%</div>
+                      <div className="text-xs text-slate-500">Interview Readiness</div>
+                    </div>
+                  </div>
+
+                  {finalResult.report.nextSteps?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-slate-400 font-semibold mb-2">Next Steps:</p>
+                      {finalResult.report.nextSteps.map((s, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-slate-300 mb-1">
+                          <span className="w-5 h-5 rounded-full bg-primary-500/20 text-primary-400 text-xs flex items-center justify-center font-bold flex-shrink-0">{i+1}</span>
+                          {s}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Strengths & Improvements */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="glass-card p-5">
-                  <h3 className="text-green-400 font-bold mb-3">✅ Strengths</h3>
-                  {finalResult.session?.strengths?.map((s, i) => (
-                    <p key={i} className="text-slate-300 text-sm mb-1">• {s}</p>
-                  ))}
+                  <h3 className="text-green-400 font-bold mb-3 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" /> Strengths
+                  </h3>
+                  {finalResult.session?.strengths?.length > 0 ? finalResult.session.strengths.map((s, i) => (
+                    <p key={i} className="text-slate-300 text-sm mb-1.5 flex items-start gap-2">
+                      <span className="text-green-400 flex-shrink-0">•</span> {s}
+                    </p>
+                  )) : <p className="text-slate-500 text-sm">Keep practicing to identify strengths.</p>}
                 </div>
                 <div className="glass-card p-5">
-                  <h3 className="text-yellow-400 font-bold mb-3">🔧 Areas to Improve</h3>
-                  {finalResult.session?.improvements?.map((s, i) => (
-                    <p key={i} className="text-slate-300 text-sm mb-1">• {s}</p>
+                  <h3 className="text-yellow-400 font-bold mb-3 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" /> Areas to Improve
+                  </h3>
+                  {finalResult.session?.improvements?.length > 0 ? finalResult.session.improvements.map((s, i) => (
+                    <p key={i} className="text-slate-300 text-sm mb-1.5 flex items-start gap-2">
+                      <span className="text-yellow-400 flex-shrink-0">•</span> {s}
+                    </p>
+                  )) : <p className="text-slate-500 text-sm">Great job! Focus on depth in answers.</p>}
+                </div>
+              </div>
+
+              {/* Learning Resources */}
+              <div className="glass-card p-5 border border-accent-cyan/20">
+                <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-accent-cyan" /> Recommended Resources
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {[
+                    { name: 'LeetCode Practice', url: 'https://leetcode.com/problemset/', desc: 'Technical interview prep' },
+                    { name: 'STAR Method Guide', url: 'https://www.themuse.com/advice/star-interview-method', desc: 'Behavioral questions' },
+                    { name: 'Pramp Mock Interviews', url: 'https://www.pramp.com/', desc: 'Free mock interviews' },
+                    { name: 'Interview Cake', url: 'https://www.interviewcake.com/', desc: 'Structured interview prep' },
+                  ].map(r => (
+                    <a key={r.name} href={r.url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2.5 rounded-xl bg-white/5 border border-white/8 hover:border-primary-500/30 transition-all group">
+                      <div className="w-7 h-7 rounded-lg bg-accent-cyan/20 flex items-center justify-center flex-shrink-0">
+                        <ExternalLink className="w-3 h-3 text-accent-cyan" />
+                      </div>
+                      <div>
+                        <p className="text-white text-xs font-medium group-hover:text-primary-300">{r.name}</p>
+                        <p className="text-slate-500 text-xs">{r.desc}</p>
+                      </div>
+                    </a>
                   ))}
                 </div>
               </div>
 
-              <button onClick={() => { setStep('setup'); setCurrentQ(0); setAnswer(''); setEvaluation(null); setTimer(0); }}
-                className="btn-primary w-full flex items-center justify-center gap-2">
-                <RotateCcw className="w-4 h-4" /> Practice Again
-              </button>
+              <div className="flex gap-3">
+                <button onClick={downloadGuide} className="btn-ghost flex-1 flex items-center justify-center gap-2">
+                  <Download className="w-4 h-4" /> Download Guide PDF
+                </button>
+                <button onClick={() => { setStep('setup'); setCurrentQ(0); setAnswer(''); setEvaluation(null); setTimer(0); setFinalResult(null); }}
+                  className="btn-primary flex-1 flex items-center justify-center gap-2">
+                  <RotateCcw className="w-4 h-4" /> Practice Again
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
