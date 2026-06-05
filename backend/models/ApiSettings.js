@@ -30,10 +30,12 @@ const apiSettingsSchema = new mongoose.Schema({
   openrouterKey: { type: String },
   openaiKey: { type: String },
   claudeKey: { type: String },
+  groqKey: { type: String },
+  deepseekKey: { type: String },
   
   activeProvider: {
     type: String,
-    enum: ['gemini', 'openrouter', 'openai', 'claude', 'default'],
+    enum: ['gemini', 'openrouter', 'openai', 'claude', 'groq', 'deepseek', 'default'],
     default: 'default'
   },
   activeModel: { type: String, default: 'gemini-2.0-flash' },
@@ -44,7 +46,9 @@ const apiSettingsSchema = new mongoose.Schema({
     gemini: { type: String, enum: ['active', 'inactive', 'error'], default: 'inactive' },
     openrouter: { type: String, enum: ['active', 'inactive', 'error'], default: 'inactive' },
     openai: { type: String, enum: ['active', 'inactive', 'error'], default: 'inactive' },
-    claude: { type: String, enum: ['active', 'inactive', 'error'], default: 'inactive' }
+    claude: { type: String, enum: ['active', 'inactive', 'error'], default: 'inactive' },
+    groq: { type: String, enum: ['active', 'inactive', 'error'], default: 'inactive' },
+    deepseek: { type: String, enum: ['active', 'inactive', 'error'], default: 'inactive' }
   }
 }, { timestamps: true });
 
@@ -54,6 +58,8 @@ apiSettingsSchema.pre('save', function(next) {
   if (this.isModified('openrouterKey') && this.openrouterKey) this.openrouterKey = encrypt(this.openrouterKey);
   if (this.isModified('openaiKey') && this.openaiKey) this.openaiKey = encrypt(this.openaiKey);
   if (this.isModified('claudeKey') && this.claudeKey) this.claudeKey = encrypt(this.claudeKey);
+  if (this.isModified('groqKey') && this.groqKey) this.groqKey = encrypt(this.groqKey);
+  if (this.isModified('deepseekKey') && this.deepseekKey) this.deepseekKey = encrypt(this.deepseekKey);
   next();
 });
 
@@ -64,6 +70,8 @@ apiSettingsSchema.methods.getDecryptedKeys = function() {
     openrouterKey: decrypt(this.openrouterKey),
     openaiKey: decrypt(this.openaiKey),
     claudeKey: decrypt(this.claudeKey),
+    groqKey: decrypt(this.groqKey),
+    deepseekKey: decrypt(this.deepseekKey),
     activeProvider: this.activeProvider,
     activeModel: this.activeModel,
     fallbackProvider: this.fallbackProvider,
@@ -79,6 +87,8 @@ apiSettingsSchema.methods.getMaskedKeys = function() {
     openrouterKey: mask(this.openrouterKey),
     openaiKey: mask(this.openaiKey),
     claudeKey: mask(this.claudeKey),
+    groqKey: mask(this.groqKey),
+    deepseekKey: mask(this.deepseekKey),
     activeProvider: this.activeProvider,
     activeModel: this.activeModel,
     fallbackProvider: this.fallbackProvider,
@@ -86,7 +96,9 @@ apiSettingsSchema.methods.getMaskedKeys = function() {
     hasGemini: !!this.geminiKey,
     hasOpenrouter: !!this.openrouterKey,
     hasOpenai: !!this.openaiKey,
-    hasClaude: !!this.claudeKey
+    hasClaude: !!this.claudeKey,
+    hasGroq: !!this.groqKey,
+    hasDeepseek: !!this.deepseekKey
   };
 };
 

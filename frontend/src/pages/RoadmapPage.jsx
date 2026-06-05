@@ -261,6 +261,40 @@ export default function RoadmapPage() {
                 </div>
               )}
 
+              {/* Weekly Goals */}
+              {result.weeklyGoals?.length > 0 && (
+                <div className="glass-card p-6">
+                  <h2 className="text-white font-bold mb-4 flex items-center gap-2">
+                    <Target className="w-5 h-5 text-accent-purple" /> Weekly Goals
+                  </h2>
+                  <div className="space-y-2">
+                    {result.weeklyGoals.map((goal, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/8">
+                        <span className="w-6 h-6 rounded-full bg-accent-purple/20 text-accent-purple text-xs font-bold flex items-center justify-center flex-shrink-0">W{i+1}</span>
+                        <span className="text-slate-300 text-sm">{goal}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Monthly Goals */}
+              {result.monthlyGoals?.length > 0 && (
+                <div className="glass-card p-6">
+                  <h2 className="text-white font-bold mb-4 flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-accent-green" /> Monthly Goals
+                  </h2>
+                  <div className="space-y-2">
+                    {result.monthlyGoals.map((goal, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-accent-green/5 border border-accent-green/20">
+                        <span className="w-7 h-7 rounded-full bg-accent-green/20 text-accent-green text-xs font-bold flex items-center justify-center flex-shrink-0">M{i+1}</span>
+                        <span className="text-slate-300 text-sm">{goal}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Milestones */}
               {result.milestones?.length > 0 && (
                 <div className="glass-card p-6">

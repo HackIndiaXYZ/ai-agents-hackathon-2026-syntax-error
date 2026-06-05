@@ -28,6 +28,10 @@ const getUserLLMConfig = async (userId) => {
         key = keys.openrouterKey;
       } else if (activeProvider === 'claude') {
         key = keys.claudeKey;
+      } else if (activeProvider === 'groq') {
+        key = keys.groqKey;
+      } else if (activeProvider === 'deepseek') {
+        key = keys.deepseekKey;
       }
       
       return { provider, model: activeModel, apiKey: key };
@@ -232,17 +236,53 @@ exports.completeInterview = async (req, res, next) => {
     const session = await InterviewSession.findOne({ _id: sessionId, user: req.user._id });
     if (!session) return res.status(404).json({ success: false, message: 'Session not found.' });
 
-    const scores = session.questions.filter(q => q.score > 0).map(q => q.score);
+    const answeredQuestions = session.questions.filter(q => q.score > 0);
+    const scores = answeredQuestions.map(q => q.score);
     const overallScore = scores.length ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) : 0;
 
+    // Build real strengths/improvements from question evaluations
+    const allFeedbacks = session.questions.filter(q => q.aiFeedback).map(q => q.aiFeedback);
+    const highScoreQuestions = session.questions.filter(q => q.score >= 7);
+    const lowScoreQuestions = session.questions.filter(q => q.score > 0 && q.score < 6);
+
+    const strengths = highScoreQuestions.length > 0
+      ? highScoreQuestions.map(q => `Strong answer on: "${q.question?.slice(0, 50)}..."`)
+      : ['Completed the full interview session', 'Attempted all questions presented'];
+
+    const improvements = lowScoreQuestions.length > 0
+      ? lowScoreQuestions.map(q => `Needs work on: "${q.question?.slice(0, 50)}..."`)
+      : ['Practice adding more specific examples to answers', 'Use the STAR method for behavioral questions'];
+
+    const performanceLevel = overallScore >= 80 ? 'Excellent' : overallScore >= 65 ? 'Good' : overallScore >= 50 ? 'Average' : 'Needs Improvement';
+    const readinessScore = Math.min(100, overallScore + (answeredQuestions.length * 2));
+
     const updated = await InterviewSession.findByIdAndUpdate(sessionId, {
-      overallScore, status: 'completed',
-      strengths: ['Good communication', 'Relevant experience'],
-      improvements: ['Be more specific', 'Use more examples']
+      overallScore,
+      status: 'completed',
+      strengths: strengths.slice(0, 3),
+      improvements: improvements.slice(0, 3)
     }, { new: true });
 
     await updateProgress(req.user._id, 'interviewsPracticed');
-    res.json({ success: true, session: updated, overallScore });
+    res.json({
+      success: true,
+      session: updated,
+      overallScore,
+      performanceLevel,
+      readinessScore,
+      answeredCount: answeredQuestions.length,
+      totalQuestions: session.questions.length,
+      report: {
+        summary: `You scored ${overallScore}% across ${answeredQuestions.length} questions. Performance level: ${performanceLevel}.`,
+        strengths: strengths.slice(0, 3),
+        improvements: improvements.slice(0, 3),
+        nextSteps: [
+          'Review model answers for questions you scored below 6',
+          'Practice STAR method for behavioral questions',
+          'Schedule another mock interview in 2-3 days'
+        ]
+      }
+    });
   } catch (error) { next(error); }
 };
 
