@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Zap, CheckCircle, AlertCircle, Plus, Trash2, Save,
   Download, Upload, Layout, User, Columns, Target, Award,
-  BarChart3, Lightbulb, Camera, FileText
+  BarChart3, Lightbulb, Camera, FileText, Sparkles, Brain
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
