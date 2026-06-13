@@ -53,12 +53,26 @@ const sendOTPEmail = async (email, otp, type = 'password_reset') => {
     </html>
   `;
   
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM || '"Startup Intelligence" <noreply@startupiq.ai>',
-    to: email,
-    subject,
-    html
-  });
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM || '"Startup Intelligence" <noreply@startupiq.ai>',
+      to: email,
+      subject,
+      html
+    });
+    console.log(`[Email Service] OTP email sent successfully to ${email}`);
+  } catch (err) {
+    console.error(`[Email Service] Failed to send OTP email via SMTP:`, err.message);
+    console.log(`\n*************************************************`);
+    console.log(`  DEVELOPMENT OTP CODE FOR ${email}: ${otp}`);
+    console.log(`*************************************************\n`);
+    
+    // In development, do not crash the request if SMTP is offline. Just log the OTP to console.
+    if (process.env.NODE_ENV === 'development') {
+      return;
+    }
+    throw err;
+  }
 };
 
 const sendWelcomeEmail = async (email, name) => {
