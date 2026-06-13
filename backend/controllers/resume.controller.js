@@ -1,6 +1,26 @@
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const { callLLM } = require('../services/gemini.service');
+const ApiSettings = require('../models/ApiSettings');
+
+// Helper: get user's complete LLM configuration (provider, model, key)
+const getUserLLMConfig = async (userId) => {
+  try {
+    const settings = await ApiSettings.findOne({ user: userId });
+    if (settings) {
+      const keys = settings.getDecryptedKeys();
+      const activeProvider = keys.activeProvider || 'default';
+      let provider = activeProvider;
+      let key = null;
+      if (activeProvider === 'default' || activeProvider === 'gemini') {
+        key = keys.geminiKey || process.env.GEMINI_API_KEY;
+        provider = 'gemini';
+      }
+      return { provider: provider, model: keys.activeModel || 'gemini-2.0-flash', apiKey: key };
+    }
+  } catch {}
+  return { provider: 'gemini', model: 'gemini-2.0-flash', apiKey: process.env.GEMINI_API_KEY };
+};
 
 const parseJSON = (raw) => {
   const match = raw.match(/\{[\s\S]*\}/);
@@ -36,10 +56,13 @@ const parseResume = async (req, res, next) => {
     }
 
     // Call LLM to extract structured data
-    const prompt = `You are an expert AI Resume Parser. Extract the following information from the provided resume text.
-If any field is missing or cannot be reasonably inferred, omit it or leave empty strings/arrays. DO NOT hallucinate data.
-If the text is messy due to raw extraction fallback, do your best to reconstruct the original semantic meaning.
-Keep existing valid structured data and fill in the missing fields if possible.
+    const prompt = `You are an expert AI Resume Builder and Career Coach. Your task is to extract the EXACT facts from the provided resume text, but ACTIVELY IMPROVE and rewrite the descriptions and summary to make them highly ATS-friendly, impactful, and results-oriented.
+
+CRITICAL RULES:
+1. Do NOT change factual details like company names, job titles, dates, degrees, or university names. Use the exact facts from the text.
+2. DO NOT use fake or mock details. If a field is missing, omit it or leave it empty.
+3. Rewrite the "summary" and "experience.description" fields to be professional, using strong action verbs (e.g., "Architected", "Spearheaded") and quantifiable metrics if they can be reasonably inferred or structured better.
+4. Ensure the final output is significantly better than the original raw text, tailored for ATS systems.
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -60,7 +83,7 @@ Return ONLY valid JSON with this exact structure:
       "startDate": "",
       "endDate": "",
       "location": "",
-      "description": ""
+      "description": "REWRITTEN AND IMPROVED ATS-FRIENDLY DESCRIPTION HERE"
     }
   ],
   "education": [
@@ -77,7 +100,7 @@ Return ONLY valid JSON with this exact structure:
   "projects": [
     {
       "name": "",
-      "description": "",
+      "description": "REWRITTEN ATS-FRIENDLY DESCRIPTION",
       "technologies": [],
       "link": ""
     }
@@ -95,61 +118,23 @@ RESUME TEXT:
 ${textToParse}
 `;
 
-    // Ensure we have access to user API key or default
-    const apiKey = req.user?.preferences?.apiKey || process.env.GEMINI_API_KEY;
-    const rawResult = await callLLM(prompt, apiKey);
+    // Fetch user's LLM config
+    const llmConfig = await getUserLLMConfig(req.user._id);
+    const rawResult = await callLLM(prompt, llmConfig);
     const parsedData = parseJSON(rawResult);
 
     res.json({
       success: true,
-      message: 'Resume parsed successfully',
+      message: 'Resume parsed and optimized successfully',
       data: parsedData
     });
 
   } catch (error) {
     console.error('Resume Parse Error:', error);
-    
-    // Fallback: If LLM fails (e.g., rate limit, invalid key), return a robust mock parsed resume
-    const mockParsedData = {
-      personalInfo: {
-        fullName: "Mock User",
-        email: "mock.user@example.com",
-        phone: "123-456-7890",
-        location: "Remote",
-        linkedin: "linkedin.com/in/mockuser",
-        github: "github.com/mockuser",
-        portfolio: ""
-      },
-      summary: "A highly motivated software engineer with experience in React and Node.js. (Generated via offline fallback)",
-      experience: [
-        {
-          company: "Tech Corp",
-          role: "Frontend Developer",
-          startDate: "Jan 2021",
-          endDate: "Present",
-          location: "Remote",
-          description: "Developed modern web apps using React, TailwindCSS, and Next.js."
-        }
-      ],
-      education: [
-        {
-          institution: "University of Technology",
-          degree: "B.S. Computer Science",
-          field: "Computer Science",
-          startDate: "Aug 2016",
-          endDate: "May 2020",
-          score: "3.8 GPA"
-        }
-      ],
-      skills: ["React", "JavaScript", "Node.js", "Express", "MongoDB", "TailwindCSS"],
-      projects: [],
-      certifications: []
-    };
-
-    res.json({
-      success: true,
-      message: 'Resume parsed via offline fallback',
-      data: mockParsedData
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process resume with AI. Please check your AI API key settings or try again later.',
+      error: error.message
     });
   }
 };
