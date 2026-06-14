@@ -1,4 +1,5 @@
-
+# ai-agents-hackathon-2026-syntax-error
+Hackathon team repository for Syntax Error - [hackindia-team:ai-agents-hackathon-2026:syntax-error]
 ```md
 # 🚀 CareerIQ AI — Multi-Agent Employment Assistance Platform
 
@@ -236,26 +237,23 @@ AI Services
 
 CareerIQ/
 
+```
+startup-intelligence/
 ├── backend/
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── services/
-│   ├── middleware/
-│   └── server.js
-│
-
-├── frontend/
-│   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   ├── store/
-│   │   └── services/
-│   └── vite.config.js
-│
-
-└── README.md
-
+│   ├── controllers/    # Business logic
+│   ├── models/         # MongoDB schemas
+│   ├── routes/         # API routes
+│   ├── services/       # AI agents (gemini.service.js)
+│   ├── middleware/     # Auth middleware
+│   └── server.js       # Express entry
+└── frontend/
+    ├── src/
+    │   ├── pages/      # All page components
+    │   ├── components/ # Layout, UI components
+    │   ├── store/      # Zustand auth store
+    │   └── services/   # Axios API client
+    └── vite.config.js  # Dev proxy config
+```
 ````
 
 
