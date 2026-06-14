@@ -16,7 +16,7 @@ Hackathon team repository for Syntax Error - [hackindia-team:ai-agents-hackathon
 
 ---
 # Live link 
-*[(project live link)](https://hm-azure-ten.vercel.app/)*
+*[(project live link here)](https://hm-azure-ten.vercel.app/)*
 
 # 🎥 Demo Video
 
