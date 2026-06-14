@@ -1,106 +1,352 @@
-# ai-agents-hackathon-2026-syntax-error
-Hackathon team repository for Syntax Error - [hackindia-team:ai-agents-hackathon-2026:syntax-error]
-# CareerIQ AI — Multi-Agent Employment Assistance Platform
 
-A production-ready, hackathon-winning AI-powered career platform with 6 specialized AI agents to help users find jobs, build resumes, ace interviews, and plan their careers.
+```md
+# 🚀 CareerIQ AI — Multi-Agent Employment Assistance Platform
 
-## Features
+## 👥 Team
 
-### 6 AI Career Agents
-- **Skill Analysis Agent** — Deep gap analysis, mastery levels, market demand, learning roadmap
-- **Resume Builder Agent** — ATS scoring with breakdown, live preview, profile photo, multiple modes & templates, PDF export
-- **Job Matching Agent** — Direct apply links, match confidence, salary prediction, remote/hybrid filters
-- **Interview Prep Agent** — Role-specific questions, real-time answer evaluation, performance report
-- **Career Roadmap Agent** — Weekly/monthly goals, milestone tracker, 30-180 day plans
-- **Local Opportunity Agent** — Multi-city search, state/country filters, remote jobs, govt portals
+**Team Name:** Syntax Error  
+**HackIndia AI Agents Hackathon 2026**
 
-### Platform Features
-- Authentication: Register, Login, Demo mode, OTP email verification, Forgot password
-- Profile: Avatar gallery (no gender assumptions), photo upload, profile completion
-- Settings: 6 AI providers — Gemini, Groq, OpenAI, Claude, DeepSeek, OpenRouter
-- Dashboard: Career readiness score, stats, radar chart, weekly activity, agent cards
-- All exports: PDF download for resume, skill analysis, interview guide, roadmap
+### Team Members
 
-## Tech Stack
+- Telugu Bhargav Ram
+- Naincy Prakash
+- Soniya Meena
 
-**Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Zustand, Recharts  
-**Backend:** Node.js, Express, MongoDB/Mongoose, JWT auth  
-**AI:** Gemini 2.0 Flash (default), Groq, OpenAI GPT, Claude, DeepSeek, OpenRouter  
 
-## Quick Start
+# 📌 About The Project
 
-### Backend
+CareerIQ AI is an AI-powered career intelligence platform that helps students and professionals understand their career direction, identify skill gaps, create personalized learning roadmaps, improve resumes, prepare for interviews, and discover suitable job opportunities.
+
+The platform uses multiple specialized AI agents to provide personalized career assistance instead of generic recommendations.
+
+
+# ❓ Problem Statement
+
+Students and professionals often face difficulties in:
+
+- Choosing the right career path
+- Understanding required skills for their target role
+- Improving resumes for ATS systems
+- Preparing for interviews
+- Finding relevant job opportunities
+- Tracking career growth
+
+
+# 💡 Our Solution
+
+CareerIQ AI provides an intelligent career assistant that analyzes user profiles and generates:
+
+- Skill gap analysis
+- Personalized career roadmap
+- Resume improvement
+- Interview preparation
+- Job recommendations
+- Career progress tracking
+
+
+# 🤖 AI Agents
+
+## 1. Skill Analysis Agent
+
+- Skill evaluation
+- Missing skill detection
+- Market demand analysis
+- Learning recommendations
+
+
+## 2. Resume Builder Agent
+
+- Resume generation
+- ATS score analysis
+- Resume optimization
+- PDF export
+
+
+## 3. Job Matching Agent
+
+- Job recommendations
+- Match confidence score
+- Salary prediction
+- Remote/hybrid filters
+
+
+## 4. Interview Preparation Agent
+
+- Role-based interview questions
+- Answer evaluation
+- AI feedback
+- Performance improvement
+
+
+## 5. Career Roadmap Agent
+
+- 30/60/90/180 day plans
+- Learning milestones
+- Daily tasks
+- Project suggestions
+
+
+## 6. Local Opportunity Agent
+
+- Location-based opportunities
+- Remote jobs
+- Career resources
+
+
+# 🔄 AI Workflow
+
+```
+
+User Profile
+|
+↓
+AI Skill Analysis
+|
+↓
+Career Roadmap Generation
+|
+↓
+Resume Optimization
+|
+↓
+Interview Preparation
+|
+↓
+Job Matching
+|
+↓
+Progress Tracking
+
+```
+
+
+# ✨ Features
+
+## Authentication
+
+- Register
+- Login
+- OTP Verification
+- Forgot Password
+- Demo Mode
+
+
+## Profile Management
+
+- User profile
+- Skills
+- Experience
+- Career goals
+- Preferences
+
+
+## Dashboard
+
+- Career readiness score
+- Progress tracking
+- Agent insights
+- Activity monitoring
+
+
+## Resume Intelligence
+
+- Resume upload
+- AI parsing
+- ATS optimization
+- Multiple templates
+- PDF export
+
+
+## Roadmap
+
+- Personalized learning plan
+- Weekly goals
+- Daily tasks
+- Milestone tracking
+
+
+## Interview Coach
+
+- AI questions
+- Answer evaluation
+- Feedback report
+
+
+## Job Intelligence
+
+- Job matching
+- Skill comparison
+- Opportunity discovery
+
+
+# 🏗️ Architecture
+
+```
+
+React Frontend
+|
+|
+Node.js + Express Backend
+|
+|
+MongoDB Database
+|
+|
+AI Services
+(Gemini / LLM Providers)
+
+```
+
+
+# 🛠️ Tech Stack
+
+## Frontend
+
+- React 18
+- Vite
+- Tailwind CSS
+- Zustand
+- Framer Motion
+- Recharts
+
+
+## Backend
+
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT Authentication
+
+
+## AI
+
+- Gemini 2.0 Flash
+- Groq
+- OpenAI
+- Claude
+- DeepSeek
+- OpenRouter
+
+
+# 📂 Project Structure
+
+```
+
+CareerIQ/
+
+├── backend/
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── middleware/
+│   └── server.js
+│
+
+├── frontend/
+│   ├── src/
+│   │   ├── pages/
+│   │   ├── components/
+│   │   ├── store/
+│   │   └── services/
+│   └── vite.config.js
+│
+
+└── README.md
+
+````
+
+
+# ⚙️ Installation
+
+## Backend
+
 ```bash
 cd backend
 npm install
 cp .env.example .env
-# Fill in your .env values
 npm run dev
-```
+````
 
-### Frontend
+## Frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-## Environment Setup
+# 🔐 Environment Variables
 
-Copy `.env.example` to `.env` in the `backend/` directory and fill in:
-- `MONGODB_URI` — MongoDB Atlas connection string
-- `GEMINI_API_KEY` — Free from https://aistudio.google.com/app/apikey
-- `JWT_SECRET` & `JWT_REFRESH_SECRET` — Random 32+ char strings
-- `EMAIL_USER` & `EMAIL_PASS` — Gmail + App Password for OTP emails
-- `ENCRYPTION_KEY` — Exactly 32 characters for API key encryption
-
-## API Providers Supported
-
-| Provider | Free Tier | Models |
-|----------|-----------|--------|
-| Google Gemini | ✅ 15 RPM free | gemini-2.0-flash, gemini-1.5-pro |
-| Groq | ✅ Generous free | llama-3.1-70b, mixtral-8x7b |
-| OpenAI | ❌ Paid | gpt-4o, gpt-4o-mini |
-| Claude | ❌ Paid | claude-3-5-sonnet, claude-3-haiku |
-| DeepSeek | ✅ Very cheap | deepseek-chat, deepseek-coder |
-| OpenRouter | ✅ Free models | 100+ models |
-
-## Architecture
+Create `.env` in backend:
 
 ```
-startup-intelligence/
-├── backend/
-│   ├── controllers/    # Business logic
-│   ├── models/         # MongoDB schemas
-│   ├── routes/         # API routes
-│   ├── services/       # AI agents (gemini.service.js)
-│   ├── middleware/     # Auth middleware
-│   └── server.js       # Express entry
-└── frontend/
-    ├── src/
-    │   ├── pages/      # All page components
-    │   ├── components/ # Layout, UI components
-    │   ├── store/      # Zustand auth store
-    │   └── services/   # Axios API client
-    └── vite.config.js  # Dev proxy config
+MONGODB_URI=
+
+GEMINI_API_KEY=
+
+JWT_SECRET=
+
+EMAIL_USER=
+
+EMAIL_PASS=
+
+ENCRYPTION_KEY=
 ```
 
-## Key Improvements (Latest Update)
+# 📊 Dataset
 
-- Added Groq and DeepSeek provider support
-- Multi-city location selection for opportunities
-- Resume profile photo upload
-- Fixed hardcoded interview strengths/improvements
-- Fixed ATS score toast emoji bug
-- Added vite.config.js (was missing)
-- Improved AI prompts for all 6 agents
-- Weekly/monthly goals in roadmap
-- Job match confidence scores and salary predictions
-- Neutral avatar gallery (no gender assumptions)
-- Resume modes: General, ATS, Company-specific, Fresher, Experienced
-- Remote/hybrid job filters
-- Skill mastery levels in skill analysis
+CareerIQ uses a career intelligence dataset containing:
 
-## License
+* Profession
+* Industry
+* Experience level
+* Skills
+* Career goals
+* Career progression data
 
-MIT
+Dataset:
+
+[https://huggingface.co/datasets/balh0000/career_iq](https://huggingface.co/datasets/balh0000/career_iq)
+
+# 🎥 Demo Video
+
+(Add HackIndia demo video link)
+
+# 📸 Screenshots
+
+(Add screenshots)
+
+* Landing Page
+* Dashboard
+* AI Analysis
+* Resume Builder
+* Roadmap
+* Interview
+
+# 🚀 Future Improvements
+
+* AI career chatbot
+* Voice assistant
+* More job integrations
+* Advanced career prediction
+* Course recommendations
+
+# 📜 License
+
+MIT License
+
+# 🏆 Hackathon
+
+Built for:
+
+**HackIndia AI Agents Hackathon 2026**
+
+Team:
+
+**Syntax Error**
+
+```
+
