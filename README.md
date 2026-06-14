@@ -16,11 +16,11 @@ Hackathon team repository for Syntax Error - [hackindia-team:ai-agents-hackathon
 
 ---
 # Live link 
-*(https://hm-azure-ten.vercel.app/)*
+*[(project live link)](https://hm-azure-ten.vercel.app/)*
 
 # 🎥 Demo Video
 
-*[(Add HackIndia demo video link here)](https://www.linkedin.com/posts/soniya-meena-3bb25b395_hackindia-adaption-ai-activity-7471905364863512576-qJ2V?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEzCFwIBmkvuB0_mELpsliUUXe8SGNpUEY8)*
+*[(demo video link here)](https://www.linkedin.com/posts/soniya-meena-3bb25b395_hackindia-adaption-ai-activity-7471905364863512576-qJ2V?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEzCFwIBmkvuB0_mELpsliUUXe8SGNpUEY8)*
 
 # 📌 About The Project
 
