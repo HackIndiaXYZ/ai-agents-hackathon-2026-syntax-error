@@ -302,19 +302,6 @@ Dataset Source: [https://huggingface.co/datasets/balh0000/career_iq](https://hug
 
 *(Add HackIndia demo video link here)*
 
----
-
-# 📸 Screenshots
-
-- 🖼️ **Landing Page**
-- 📊 **Dashboard**
-- 🧠 **AI Analysis**
-- 📝 **Resume Builder**
-- 🗺️ **Roadmap**
-- 💬 **Interview Preparation**
-
----
-
 # 🚀 Future Improvements
 
 - 🤖 **AI Career Chatbot**: A 24/7 interactive chat assistant.
