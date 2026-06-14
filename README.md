@@ -304,9 +304,6 @@ Dataset Source: [https://huggingface.co/datasets/balh0000/career_iq](https://hug
 
 ---
 
-# 🎥 Demo Video
-
-*[(Add HackIndia demo video link here)](https://www.linkedin.com/posts/soniya-meena-3bb25b395_hackindia-adaption-ai-activity-7471905364863512576-qJ2V?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEzCFwIBmkvuB0_mELpsliUUXe8SGNpUEY8)*
 
 # 🚀 Future Improvements
 
